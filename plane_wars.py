@@ -228,11 +228,77 @@ class Hero(FlyingObject):
 
 
 class Game(object):
+    # 初始屏幕大小
     screen_size = (416, 692)
+    # 状态-开始
     status_start = 0
+    # 状态-游戏中
     status_running = 1
+    # 状态-暂停
     status_pause = 2
+    # 状态-结束
     status_over = 3
+
+    def __init__(self):
+        self.hero = Hero()
+        self.flies = []
+        self.bullets = []
+        self.score = 0
+        self.state = Game.status_start
+
+    def game_action(self):
+        """游戏流程"""
+        pass
+
+    def paint_action(self, window, font):
+        """重绘流程"""
+        # 画背景
+        window.blit(img_background, (0, 0))
+        # 画英雄机
+        window.blit(Hero.image, (self.hero.get_x(), self.hero.get_y()))
+        # 画飞行物
+        for obj in self.flies:
+            window.blit(obj.image, (obj.get_x(), obj.get_y()))
+        # 画子弹
+        for bullet in self.bullets:
+            window.blit(Bullet.image, bullet.get_x(), bullet.get_y())
+        # 画分数和生命值
+        score_content = font.render("SCORE:s%d" % self.score, True, (10, 100, 200))
+        score_content_rect = score_content.get_rect()
+        score_content_rect.left = 10
+        score_content_rect.top = 25
+        life_content = font.render("LIFE:s%d" % self.hero.get_life(), True, (10, 100, 200))
+        life_content_rect = life_content.get_rect()
+        life_content_rect.left = 10
+        life_content_rect.top = 45
+        window.blit(score_content, score_content_rect)
+        window.blit(life_content, life_content_rect)
+        # 画游戏状态
+
+        pass
+
+
+if __name__ == '__main__':
+    # 初始化pygame
+    pygame.init()
+    # 加载图片资源
+    Airplane.image = pygame.image.load("img/airplane.png")
+    Bee.image = pygame.image.load("img/bee.png")
+    Bullet.image = pygame.image.load("img/bullet.png")
+    Hero.images = (pygame.image.load("img/hero0.png"), pygame.image.load("img/hero1.png"))
+    img_background = pygame.image.load("img/background.png")
+    img_start = pygame.image.load("img/start.png")
+    img_pause = pygame.image.load("img/pause.png")
+    img_game_over = pygame.image.load("img/gameover.png")
+    # 初始化窗口
+    window = pygame.display.set_mode(Game.screen_size, 0, 32)
+    pygame.display.set_caption("飞机大战")
+    font = pygame.font.SysFont("arial", 24)
+    pygame.time.Clock().tick(30)
+    window.blit(img_background, (0, 0))
+    pygame.display.update()
+    # while True:
+    #     pygame.display.update()
 
 
 

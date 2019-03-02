@@ -76,9 +76,6 @@ class Airplane(FlyingObject, EnemyMixIn):
     image = pygame.image.load("img/airplane.png")
 
     def __init__(self):
-        """
-        :param image: 图片
-        """
         image_width, image_height = Airplane.image.get_size()
         screen_width, screen_height = Game.screen_size
         x = random.randint(0, screen_width-image_width)
@@ -247,7 +244,7 @@ class Game(object):
         self.shoot_index = 0
         self.shoot_rate = 20
 
-    def enter_actoin(self):
+    def enter_action(self):
         """生产飞行物 敌机和蜜蜂"""
         self.enter_index += 1
         if self.enter_index % self.enter_rate == 0:
@@ -321,7 +318,7 @@ class Game(object):
         """游戏流程"""
         if self.state == self.status_running:
             # 敌机/蜜蜂入场
-            self.enter_actoin()
+            self.enter_action()
             # 飞行物走一步
             self.step_action()
             # 英雄机射击
@@ -333,18 +330,18 @@ class Game(object):
             # 英雄机与敌人碰撞检测
             self.check_game_over_action()
 
-    def paint_action(self, window, font):
+    def paint_action(self, screen):
         """重绘流程"""
         # 画背景
-        window.blit(Game.img_background, (0, 0))
+        screen.blit(Game.img_background, (0, 0))
         # 画英雄机
-        window.blit(Hero.image, (self.hero.x, self.hero.y))
+        screen.blit(Hero.image, (self.hero.x, self.hero.y))
         # 画飞行物
         for obj in self.flies:
-            window.blit(obj.image, (obj.x, obj.y))
+            screen.blit(obj.image, (obj.x, obj.y))
         # 画子弹
         for bullet in self.bullets:
-            window.blit(Bullet.image, (bullet.x, bullet.y))
+            screen.blit(Bullet.image, (bullet.x, bullet.y))
         # 画分数和生命值
         score_content = font.render("SCORE:%d" % self.score, True, (10, 100, 200))
         score_content_rect = score_content.get_rect()
@@ -354,15 +351,15 @@ class Game(object):
         life_content_rect = life_content.get_rect()
         life_content_rect.left = 10
         life_content_rect.top = 50
-        window.blit(score_content, score_content_rect)
-        window.blit(life_content, life_content_rect)
+        screen.blit(score_content, score_content_rect)
+        screen.blit(life_content, life_content_rect)
         # 画游戏状态
         if self.state == self.status_start:
-            window.blit(Game.img_start, (0, 0))
+            screen.blit(Game.img_start, (0, 0))
         elif self.state == self.status_pause:
-            window.blit(Game.img_pause, (0, 0))
+            screen.blit(Game.img_pause, (0, 0))
         elif self.state == self.status_over:
-            window.blit(Game.img_game_over, (0, 0))
+            screen.blit(Game.img_game_over, (0, 0))
         pygame.display.update()
 
 
@@ -378,7 +375,7 @@ if __name__ == '__main__':
     game = Game()
     while True:
         game.game_action()
-        game.paint_action(window, font)
+        game.paint_action(window)
         for event in pygame.event.get():
             if event.type == MOUSEMOTION:
                 # 鼠标移动事件

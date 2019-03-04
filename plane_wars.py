@@ -247,7 +247,7 @@ class Game(object):
         self.shoot_index = 0
         self.shoot_rate = 20
 
-    def enter_actoin(self):
+    def enter_action(self):
         """生产飞行物 敌机和蜜蜂"""
         self.enter_index += 1
         if self.enter_index % self.enter_rate == 0:
@@ -321,7 +321,7 @@ class Game(object):
         """游戏流程"""
         if self.state == self.status_running:
             # 敌机/蜜蜂入场
-            self.enter_actoin()
+            self.enter_action()
             # 飞行物走一步
             self.step_action()
             # 英雄机射击
@@ -333,28 +333,28 @@ class Game(object):
             # 英雄机与敌人碰撞检测
             self.check_game_over_action()
 
-    def paint_action(self, window, font):
+    def paint_action(self, surface, font_obj):
         """重绘流程"""
         # 画背景
-        Game.repeat_paint_img(window, Game.img_background, Game.screen_size)
+        Game.repeat_paint_img(surface, Game.img_background, Game.screen_size)
         # 画英雄机
-        window.blit(Hero.image, (self.hero.x, self.hero.y))
+        surface.blit(Hero.image, (self.hero.x, self.hero.y))
         # 画飞行物
         for obj in self.flies:
-            window.blit(obj.image, (obj.x, obj.y))
+            surface.blit(obj.image, (obj.x, obj.y))
         # 画子弹
         for bullet in self.bullets:
-            window.blit(Bullet.image, (bullet.x, bullet.y))
+            surface.blit(Bullet.image, (bullet.x, bullet.y))
         # 画分数和生命值
-        Game.paint_font(window, font, "SCORE:%d" % self.score, (10, 100, 200), 10, 25)
-        Game.paint_font(window, font, "LIFE:%d" % self.hero.get_life(), (10, 100, 200), 10, 50)
+        Game.paint_font(surface, font_obj, "SCORE:%d" % self.score, (10, 100, 200), 10, 25)
+        Game.paint_font(surface, font_obj, "LIFE:%d" % self.hero.get_life(), (10, 100, 200), 10, 50)
         # 画游戏状态
         if self.state == self.status_start:
-            Game.repeat_paint_img(window, Game.img_start, Game.screen_size)
+            Game.repeat_paint_img(surface, Game.img_start, Game.screen_size)
         elif self.state == self.status_pause:
-            Game.repeat_paint_img(window, Game.img_pause, Game.screen_size)
+            Game.repeat_paint_img(surface, Game.img_pause, Game.screen_size)
         elif self.state == self.status_over:
-            Game.repeat_paint_img(window, Game.img_game_over, Game.screen_size)
+            Game.repeat_paint_img(surface, Game.img_game_over, Game.screen_size)
         pygame.display.update()
 
     @staticmethod

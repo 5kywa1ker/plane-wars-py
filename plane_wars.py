@@ -76,9 +76,6 @@ class Airplane(FlyingObject, EnemyMixIn):
     image = pygame.image.load("img/airplane.png")
 
     def __init__(self):
-        """
-        :param image: 图片
-        """
         image_width, image_height = Airplane.image.get_size()
         screen_width, screen_height = Game.screen_size
         x = random.randint(0, screen_width-image_width)
@@ -414,13 +411,3 @@ if __name__ == '__main__':
             elif event.type == QUIT:
                 pygame.quit()
                 sys.exit(0)
-
-
-    
-
-
-
-
-
-
-

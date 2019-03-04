@@ -379,15 +379,16 @@ if __name__ == '__main__':
     # 初始化pygame
     pygame.init()
     # 初始化窗口
-    window = pygame.display.set_mode(Game.screen_size, 0, 32)
+    window = pygame.display.set_mode(Game.screen_size, RESIZABLE | HWSURFACE | DOUBLEBUF, 32)
     pygame.display.set_caption("飞机大战-python")
     font = pygame.font.SysFont("arial", 20)
-    # 设置刷新率30FPS
-    pygame.time.Clock().tick(30)
+    clock = pygame.time.Clock()
     game = Game()
     while True:
-        game.game_action()
+        # 设置刷新率60FPS
+        clock.tick(60)
         game.paint_action(window, font)
+        game.game_action()
         for event in pygame.event.get():
             if event.type == MOUSEMOTION:
                 # 鼠标移动事件

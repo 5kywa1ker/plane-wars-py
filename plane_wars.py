@@ -221,7 +221,7 @@ class Hero(FlyingObject):
 
 class Game(object):
     # 初始屏幕大小
-    screen_size = (416, 692)
+    screen_size = (400, 654)
     # 状态-开始
     status_start = 0
     # 状态-游戏中
@@ -336,7 +336,7 @@ class Game(object):
     def paint_action(self, window, font):
         """重绘流程"""
         # 画背景
-        window.blit(Game.img_background, (0, 0))
+        Game.repeat_paint_img(window, Game.img_background, Game.screen_size)
         # 画英雄机
         window.blit(Hero.image, (self.hero.x, self.hero.y))
         # 画飞行物
@@ -346,24 +346,36 @@ class Game(object):
         for bullet in self.bullets:
             window.blit(Bullet.image, (bullet.x, bullet.y))
         # 画分数和生命值
-        score_content = font.render("SCORE:%d" % self.score, True, (10, 100, 200))
-        score_content_rect = score_content.get_rect()
-        score_content_rect.left = 10
-        score_content_rect.top = 25
-        life_content = font.render("LIFE:%d" % self.hero.get_life(), True, (10, 100, 200))
-        life_content_rect = life_content.get_rect()
-        life_content_rect.left = 10
-        life_content_rect.top = 50
-        window.blit(score_content, score_content_rect)
-        window.blit(life_content, life_content_rect)
+        Game.paint_font(window, font, "SCORE:%d" % self.score, (10, 100, 200), 10, 25)
+        Game.paint_font(window, font, "LIFE:%d" % self.hero.get_life(), (10, 100, 200), 10, 50)
         # 画游戏状态
         if self.state == self.status_start:
-            window.blit(Game.img_start, (0, 0))
+            Game.repeat_paint_img(window, Game.img_start, Game.screen_size)
         elif self.state == self.status_pause:
-            window.blit(Game.img_pause, (0, 0))
+            Game.repeat_paint_img(window, Game.img_pause, Game.screen_size)
         elif self.state == self.status_over:
-            window.blit(Game.img_game_over, (0, 0))
+            Game.repeat_paint_img(window, Game.img_game_over, Game.screen_size)
         pygame.display.update()
+
+    @staticmethod
+    def paint_font(surface, font_obj, content, content_color, left, top):
+        font_content = font_obj.render(content, True, content_color)
+        font_content_rect = font_content.get_rect()
+        font_content_rect.left = left
+        font_content_rect.top = top
+        surface.blit(font_content, font_content_rect)
+
+    @staticmethod
+    def repeat_paint_img(surface, img, surface_size):
+        surface_width, surface_height = surface_size
+        image_width, image_height = img.get_size()
+        m = surface_width // image_width + 1
+        n = surface_height // image_height + 1
+        y = 0
+        for i in range(n):
+            for j in range(m):
+                surface.blit(img, (j * image_width, y))
+            y += image_height
 
 
 if __name__ == '__main__':
@@ -371,7 +383,7 @@ if __name__ == '__main__':
     pygame.init()
     # 初始化窗口
     window = pygame.display.set_mode(Game.screen_size, 0, 32)
-    pygame.display.set_caption("飞机大战")
+    pygame.display.set_caption("飞机大战-python")
     font = pygame.font.SysFont("arial", 20)
     # 设置刷新率30FPS
     pygame.time.Clock().tick(30)

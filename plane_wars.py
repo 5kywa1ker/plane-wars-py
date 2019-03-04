@@ -5,6 +5,7 @@
 # @Site    : 
 # @File    : plane_wars.py
 # @Software: PyCharm
+import time
 
 import pygame
 import random
@@ -68,6 +69,26 @@ class EnemyMixIn(object):
         :return: 返回敌机分数
         """
         return 0
+
+
+class TokenBucket(object):
+    def __init__(self, rate, capacity):
+        self._rate = rate
+        self._capacity = capacity
+        self._current_amount = 0
+        self._last_consume_time = int(time.time())
+
+    def consume(self, token_amount):
+        # 计算从上次发送到这次发送，新发放的令牌数量
+        increment = (int(time.time()) - self._last_consume_time) * self._rate
+        # 令牌数量不能超过桶的容量
+        self._current_amount = min(increment + self._current_amount, self._capacity)
+        # 如果没有足够的令牌，则不能发送数据
+        if token_amount > self._current_amount:
+            return False
+        self._last_consume_time = int(time.time())
+        self._current_amount -= token_amount
+        return True
 
 
 class Airplane(FlyingObject, EnemyMixIn):
@@ -239,15 +260,13 @@ class Game(object):
         self.bullets = []
         self.score = 0
         self.state = Game.status_start
-        self.enter_index = 0
-        self.enter_rate = 40
         self.shoot_index = 0
         self.shoot_rate = 20
+        self.enter_rate_token_bucket = TokenBucket(2, 30)
 
     def enter_action(self):
         """生产飞行物 敌机和蜜蜂"""
-        self.enter_index += 1
-        if self.enter_index % self.enter_rate == 0:
+        if self.enter_rate_token_bucket.consume(1):
             fly_type = random.randint(0, 20)
             if fly_type == 0:
                 fly_obj = Bee()

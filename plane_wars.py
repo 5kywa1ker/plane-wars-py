@@ -53,6 +53,8 @@ class AwardMixIn(object):
     AWARD_TYPE_TREBLE_FIRE = 2
     # 奖励类型-四倍火力
     AWARD_TYPE_FOURFOLD_FIRE = 3
+    # 奖励类型-九倍火力
+    AWARD_TYPE_NINEFOLD_FIRE = 4
 
     def get_type(self):
         """
@@ -128,7 +130,7 @@ class Bee(FlyingObject, AwardMixIn):
         super().__init__(image_width, image_height, x, y)
         self.x_speed = 1
         self.y_speed = 2
-        self.award_type = random.randint(0, 3)
+        self.award_type = random.randint(0, 4)
 
     def get_type(self):
         return self.award_type
@@ -200,12 +202,12 @@ class Hero(FlyingObject):
         y_off_set = self.y - 10
         if self.fire > 1:
             total_width = (self.fire * Bullet.image_width) + ((self.fire - 1) * bullet_space)
-            first_bullet_x = self.x + abs((self.width - total_width) // 2)
+            first_bullet_x = self.x + (self.width - total_width) // 2
             for i in range(self.fire):
                 bullet_x = first_bullet_x + (i * (Bullet.image_width + bullet_space))
                 bullet_list.append(Bullet(bullet_x, y_off_set))
         else:
-            bullet_x_offset = self.x + (self.width // 2)
+            bullet_x_offset = self.x + ((self.width - Bullet.image_width) // 2)
             bullet_list.append(Bullet(bullet_x_offset, y_off_set))
         return bullet_list
 
@@ -322,6 +324,8 @@ class Game(object):
                     self.hero.set_fire(3)
                 elif award_type == AwardMixIn.AWARD_TYPE_LIFE:
                     self.hero.add_life()
+                elif award_type == AwardMixIn.AWARD_TYPE_NINEFOLD_FIRE:
+                    self.hero.set_fire(9)
 
     def check_game_over_action(self):
         """英雄机碰撞检测"""

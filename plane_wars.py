@@ -398,7 +398,8 @@ if __name__ == '__main__':
     # 初始化pygame
     pygame.init()
     # 初始化窗口
-    window = pygame.display.set_mode(Game.screen_size, RESIZABLE | HWSURFACE | DOUBLEBUF, 32)
+    window = pygame.display.set_mode(Game.screen_size, RESIZABLE | HWSURFACE | DOUBLEBUF)
+    pygame.display.set_icon(pygame.image.load("img/logo.ico"))
     pygame.display.set_caption("飞机大战-python")
     font = pygame.font.SysFont("arial", 20)
     clock = pygame.time.Clock()

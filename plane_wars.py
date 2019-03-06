@@ -5,14 +5,14 @@
 # @Site    : 
 # @File    : plane_wars.py
 # @Software: PyCharm
-
-import pygame
+import time
 import random
+import pygame
 import sys
 from pygame.locals import *
 
 
-class FlyingObject(object):
+class FlyingObject:
     """飞行物父类
     """
     def __init__(self, width, height, x, y):
@@ -41,7 +41,7 @@ class FlyingObject(object):
         return x1 < x < x2 and y1 < y < y2
 
 
-class AwardMixIn(object):
+class AwardMixIn:
     """奖励
     """
     # 奖励类型-双倍火力
@@ -52,6 +52,8 @@ class AwardMixIn(object):
     AWARD_TYPE_TREBLE_FIRE = 2
     # 奖励类型-四倍火力
     AWARD_TYPE_FOURFOLD_FIRE = 3
+    # 奖励类型-九倍火力
+    AWARD_TYPE_NINEFOLD_FIRE = 4
 
     def get_type(self):
         """
@@ -60,7 +62,7 @@ class AwardMixIn(object):
         return AwardMixIn.AWARD_TYPE_DOUBLE_FIRE
 
 
-class EnemyMixIn(object):
+class EnemyMixIn:
     """敌人
     """
     def get_score(self):
@@ -68,6 +70,26 @@ class EnemyMixIn(object):
         :return: 返回敌机分数
         """
         return 0
+
+
+class TokenBucket:
+    def __init__(self, rate, capacity):
+        self._rate = rate
+        self._capacity = capacity
+        self._current_amount = 0
+        self._last_consume_time = int(time.time())
+
+    def consume(self, token_amount):
+        # 计算从上次发送到这次发送，新发放的令牌数量
+        increment = (int(time.time()) - self._last_consume_time) * self._rate
+        # 令牌数量不能超过桶的容量
+        self._current_amount = min(increment + self._current_amount, self._capacity)
+        # 如果没有足够的令牌，则不能发送数据
+        if token_amount > self._current_amount:
+            return False
+        self._last_consume_time = int(time.time())
+        self._current_amount -= token_amount
+        return True
 
 
 class Airplane(FlyingObject, EnemyMixIn):
@@ -107,7 +129,7 @@ class Bee(FlyingObject, AwardMixIn):
         super().__init__(image_width, image_height, x, y)
         self.x_speed = 1
         self.y_speed = 2
-        self.award_type = random.randint(0, 3)
+        self.award_type = random.randint(0, 4)
 
     def get_type(self):
         return self.award_type
@@ -179,12 +201,12 @@ class Hero(FlyingObject):
         y_off_set = self.y - 10
         if self.fire > 1:
             total_width = (self.fire * Bullet.image_width) + ((self.fire - 1) * bullet_space)
-            first_bullet_x = self.x + abs((self.width - total_width) // 2)
+            first_bullet_x = self.x + (self.width - total_width) // 2
             for i in range(self.fire):
                 bullet_x = first_bullet_x + (i * (Bullet.image_width + bullet_space))
                 bullet_list.append(Bullet(bullet_x, y_off_set))
         else:
-            bullet_x_offset = self.x + (self.width // 2)
+            bullet_x_offset = self.x + ((self.width - Bullet.image_width) // 2)
             bullet_list.append(Bullet(bullet_x_offset, y_off_set))
         return bullet_list
 
@@ -216,9 +238,9 @@ class Hero(FlyingObject):
         return x1 <= x <= x2 and y1 <= y <= y2
 
 
-class Game(object):
+class Game:
     # 初始屏幕大小
-    screen_size = (416, 692)
+    screen_size = (400, 654)
     # 状态-开始
     status_start = 0
     # 状态-游戏中
@@ -239,15 +261,13 @@ class Game(object):
         self.bullets = []
         self.score = 0
         self.state = Game.status_start
-        self.enter_index = 0
-        self.enter_rate = 40
         self.shoot_index = 0
         self.shoot_rate = 20
+        self.enter_rate_token_bucket = TokenBucket(2, 30)
 
     def enter_action(self):
         """生产飞行物 敌机和蜜蜂"""
-        self.enter_index += 1
-        if self.enter_index % self.enter_rate == 0:
+        if self.enter_rate_token_bucket.consume(1):
             fly_type = random.randint(0, 20)
             if fly_type == 0:
                 fly_obj = Bee()
@@ -303,6 +323,8 @@ class Game(object):
                     self.hero.set_fire(3)
                 elif award_type == AwardMixIn.AWARD_TYPE_LIFE:
                     self.hero.add_life()
+                elif award_type == AwardMixIn.AWARD_TYPE_NINEFOLD_FIRE:
+                    self.hero.set_fire(9)
 
     def check_game_over_action(self):
         """英雄机碰撞检测"""
@@ -330,57 +352,74 @@ class Game(object):
             # 英雄机与敌人碰撞检测
             self.check_game_over_action()
 
-    def paint_action(self, screen):
+    def paint_action(self, surface, font_obj):
         """重绘流程"""
         # 画背景
-        screen.blit(Game.img_background, (0, 0))
+        Game.repeat_paint_img(surface, Game.img_background, Game.screen_size)
         # 画英雄机
-        screen.blit(Hero.image, (self.hero.x, self.hero.y))
+        surface.blit(Hero.image, (self.hero.x, self.hero.y))
         # 画飞行物
         for obj in self.flies:
-            screen.blit(obj.image, (obj.x, obj.y))
+            surface.blit(obj.image, (obj.x, obj.y))
         # 画子弹
         for bullet in self.bullets:
-            screen.blit(Bullet.image, (bullet.x, bullet.y))
+            surface.blit(Bullet.image, (bullet.x, bullet.y))
         # 画分数和生命值
-        score_content = font.render("SCORE:%d" % self.score, True, (10, 100, 200))
-        score_content_rect = score_content.get_rect()
-        score_content_rect.left = 10
-        score_content_rect.top = 25
-        life_content = font.render("LIFE:%d" % self.hero.get_life(), True, (10, 100, 200))
-        life_content_rect = life_content.get_rect()
-        life_content_rect.left = 10
-        life_content_rect.top = 50
-        screen.blit(score_content, score_content_rect)
-        screen.blit(life_content, life_content_rect)
+        Game.paint_font(surface, font_obj, "分    数: %d" % self.score, (106, 90, 205), 10, 5)
+        Game.paint_font(surface, font_obj, "生命值: %d" % self.hero.get_life(), (255, 69, 0), 10, 22)
         # 画游戏状态
         if self.state == self.status_start:
-            screen.blit(Game.img_start, (0, 0))
+            Game.repeat_paint_img(surface, Game.img_start, Game.screen_size)
         elif self.state == self.status_pause:
-            screen.blit(Game.img_pause, (0, 0))
+            Game.repeat_paint_img(surface, Game.img_pause, Game.screen_size)
         elif self.state == self.status_over:
-            screen.blit(Game.img_game_over, (0, 0))
+            Game.repeat_paint_img(surface, Game.img_game_over, Game.screen_size)
         pygame.display.update()
+
+    @staticmethod
+    def paint_font(surface, font_obj, content, content_color, left, top):
+        font_content = font_obj.render(content, True, content_color)
+        font_content_rect = font_content.get_rect()
+        font_content_rect.left = left
+        font_content_rect.top = top
+        surface.blit(font_content, font_content_rect)
+
+    @staticmethod
+    def repeat_paint_img(surface, img, surface_size):
+        surface_width, surface_height = surface_size
+        image_width, image_height = img.get_size()
+        m = surface_width // image_width + 1
+        n = surface_height // image_height + 1
+        y = 0
+        for i in range(n):
+            for j in range(m):
+                surface.blit(img, (j * image_width, y))
+            y += image_height
 
 
 if __name__ == '__main__':
     # 初始化pygame
     pygame.init()
     # 初始化窗口
-    window = pygame.display.set_mode(Game.screen_size, 0, 32)
-    pygame.display.set_caption("飞机大战")
-    font = pygame.font.SysFont("arial", 20)
-    # 设置刷新率30FPS
-    pygame.time.Clock().tick(30)
+    window = pygame.display.set_mode(Game.screen_size, RESIZABLE | HWSURFACE | DOUBLEBUF)
+    pygame.display.set_icon(pygame.image.load("img/logo.ico"))
+    pygame.display.set_caption("飞机大战-python")
+    font = pygame.font.SysFont("dengxian", 15)
+    clock = pygame.time.Clock()
     game = Game()
     while True:
+        # 设置刷新率60FPS
+        clock.tick(60)
+        game.paint_action(window, font)
         game.game_action()
-        game.paint_action(window)
         for event in pygame.event.get():
             if event.type == MOUSEMOTION:
+                pos_x, pos_y = event.pos
                 # 鼠标移动事件
                 if game.state == Game.status_running:
-                    game.hero.move_to(event.pos[0], event.pos[1])
+                    game.hero.move_to(pos_x, pos_y)
+                    if pos_x >= Game.screen_size[0]-10 or pos_y >= Game.screen_size[1]-10:
+                        game.state = Game.status_pause
             elif event.type == MOUSEBUTTONDOWN:
                 # 鼠标按下
                 if game.state == Game.status_running:
@@ -399,13 +438,3 @@ if __name__ == '__main__':
             elif event.type == QUIT:
                 pygame.quit()
                 sys.exit(0)
-
-
-    
-
-
-
-
-
-
-

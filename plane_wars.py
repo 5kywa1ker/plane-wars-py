@@ -6,14 +6,13 @@
 # @File    : plane_wars.py
 # @Software: PyCharm
 import time
-
-import pygame
 import random
+import pygame
 import sys
 from pygame.locals import *
 
 
-class FlyingObject(object):
+class FlyingObject:
     """飞行物父类
     """
     def __init__(self, width, height, x, y):
@@ -42,7 +41,7 @@ class FlyingObject(object):
         return x1 < x < x2 and y1 < y < y2
 
 
-class AwardMixIn(object):
+class AwardMixIn:
     """奖励
     """
     # 奖励类型-双倍火力
@@ -63,7 +62,7 @@ class AwardMixIn(object):
         return AwardMixIn.AWARD_TYPE_DOUBLE_FIRE
 
 
-class EnemyMixIn(object):
+class EnemyMixIn:
     """敌人
     """
     def get_score(self):
@@ -73,7 +72,7 @@ class EnemyMixIn(object):
         return 0
 
 
-class TokenBucket(object):
+class TokenBucket:
     def __init__(self, rate, capacity):
         self._rate = rate
         self._capacity = capacity
@@ -239,7 +238,7 @@ class Hero(FlyingObject):
         return x1 <= x <= x2 and y1 <= y <= y2
 
 
-class Game(object):
+class Game:
     # 初始屏幕大小
     screen_size = (400, 654)
     # 状态-开始
@@ -366,8 +365,8 @@ class Game(object):
         for bullet in self.bullets:
             surface.blit(Bullet.image, (bullet.x, bullet.y))
         # 画分数和生命值
-        Game.paint_font(surface, font_obj, "SCORE:%d" % self.score, (10, 100, 200), 10, 25)
-        Game.paint_font(surface, font_obj, "LIFE:%d" % self.hero.get_life(), (10, 100, 200), 10, 50)
+        Game.paint_font(surface, font_obj, "分    数: %d" % self.score, (106, 90, 205), 10, 5)
+        Game.paint_font(surface, font_obj, "生命值: %d" % self.hero.get_life(), (255, 69, 0), 10, 22)
         # 画游戏状态
         if self.state == self.status_start:
             Game.repeat_paint_img(surface, Game.img_start, Game.screen_size)
@@ -405,7 +404,7 @@ if __name__ == '__main__':
     window = pygame.display.set_mode(Game.screen_size, RESIZABLE | HWSURFACE | DOUBLEBUF)
     pygame.display.set_icon(pygame.image.load("img/logo.ico"))
     pygame.display.set_caption("飞机大战-python")
-    font = pygame.font.SysFont("arial", 20)
+    font = pygame.font.SysFont("dengxian", 15)
     clock = pygame.time.Clock()
     game = Game()
     while True:
@@ -415,9 +414,12 @@ if __name__ == '__main__':
         game.game_action()
         for event in pygame.event.get():
             if event.type == MOUSEMOTION:
+                pos_x, pos_y = event.pos
                 # 鼠标移动事件
                 if game.state == Game.status_running:
-                    game.hero.move_to(event.pos[0], event.pos[1])
+                    game.hero.move_to(pos_x, pos_y)
+                    if pos_x >= Game.screen_size[0]-10 or pos_y >= Game.screen_size[1]-10:
+                        game.state = Game.status_pause
             elif event.type == MOUSEBUTTONDOWN:
                 # 鼠标按下
                 if game.state == Game.status_running:

@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2019/2/27 17:43
 # @Author  : hfb
-# @Site    : 
+# @Site    : https://skywa1ker.cn
 # @File    : plane_wars.py
 # @Software: PyCharm
 import time
 import random
-import pygame
 import sys
+import pygame
 from pygame.locals import *
 
 
@@ -407,6 +407,7 @@ if __name__ == '__main__':
     font = pygame.font.SysFont("dengxian", 15)
     clock = pygame.time.Clock()
     game = Game()
+    game.paint_action(window, font)
     while True:
         # 设置刷新率60FPS
         clock.tick(60)
